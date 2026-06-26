@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { seoAudit } from '../data.js'
-import { Card, Badge } from '../ui.jsx'
+import { Card, Badge, SortableTable } from '../ui.jsx'
 
 const sevTone = { Critical: 'red', Warning: 'amber', Notice: 'blue' }
 
@@ -47,28 +47,16 @@ export default function SeoAudit() {
           ))}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead>
-              <tr className="border-b border-ink-700 text-left text-xs uppercase tracking-wider text-neutral-500">
-                <th className="py-3 pr-4 font-medium">URL</th>
-                <th className="py-3 pr-4 font-medium">Category</th>
-                <th className="py-3 pr-4 font-medium">Issue</th>
-                <th className="py-3 font-medium">Severity</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-800">
-              {rows.map((r, i) => (
-                <tr key={i} className="hover:bg-ink-850/50">
-                  <td className="py-3 pr-4 font-mono text-xs text-neutral-300">{r.url}</td>
-                  <td className="py-3 pr-4 text-neutral-400">{r.category}</td>
-                  <td className="py-3 pr-4 text-neutral-200">{r.issue}</td>
-                  <td className="py-3"><Badge tone={sevTone[r.severity]}>{r.severity}</Badge></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SortableTable
+          minWidth={560}
+          rows={rows.map((r, i) => ({ ...r, _key: i }))}
+          columns={[
+            { key: 'url', label: 'URL', cellClass: 'font-mono text-xs text-neutral-300' },
+            { key: 'category', label: 'Category', cellClass: 'text-neutral-400' },
+            { key: 'issue', label: 'Issue' },
+            { key: 'severity', label: 'Severity', render: (r) => <Badge tone={sevTone[r.severity]}>{r.severity}</Badge> },
+          ]}
+        />
       </Card>
     </div>
   )

@@ -1,10 +1,12 @@
 import React from 'react'
 import { ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { seoOverview } from '../data.js'
+import { scaleNum, periodOf } from '../period.js'
 import { Card, Delta, Metric, Badge, Dot } from '../ui.jsx'
 
-export default function SeoOverview() {
+export default function SeoOverview({ period = 'This Month' }) {
   const s = seoOverview
+  const p = periodOf(period)
   const score = s.onPageScore
   const circumference = 2 * Math.PI * 52
   const dash = (score.score / 100) * circumference
@@ -40,8 +42,8 @@ export default function SeoOverview() {
 
       {/* Organic monthly traffic */}
       <Card title="Organic Monthly Traffic" subtitle="GA4 · Jun 2026">
-        <Metric value={s.organicTraffic.value.toLocaleString()} />
-        <Delta className="mt-2" value={s.organicTraffic.delta} up label="MoM" />
+        <Metric value={scaleNum(s.organicTraffic.value, period).toLocaleString()} />
+        <Delta className="mt-2" value={s.organicTraffic.delta} up label={p.suffix} />
         <div className="mt-4 h-28">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={s.organicTraffic.area}>

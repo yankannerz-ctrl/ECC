@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { backlinks } from '../data.js'
-import { Card, Delta, Metric, Badge } from '../ui.jsx'
+import { Card, Delta, Metric, Badge, SortableTable } from '../ui.jsx'
 
 export default function Backlinks() {
   const b = backlinks
@@ -37,32 +37,18 @@ export default function Backlinks() {
           ))}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead>
-              <tr className="border-b border-ink-700 text-left text-xs uppercase tracking-wider text-neutral-500">
-                <th className="py-3 pr-4 font-medium">Domain</th>
-                <th className="py-3 pr-4 font-medium">DA</th>
-                <th className="py-3 pr-4 font-medium">Backlinks</th>
-                <th className="py-3 pr-4 font-medium">Link Type</th>
-                <th className="py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-800">
-              {rows.map((r) => (
-                <tr key={r.domain} className="hover:bg-ink-850/50">
-                  <td className="py-3 pr-4 text-neutral-200">{r.domain}</td>
-                  <td className="py-3 pr-4">
-                    <span className="font-bold text-white">{r.da}</span>
-                  </td>
-                  <td className="py-3 pr-4 text-neutral-300">{r.backlinks}</td>
-                  <td className="py-3 pr-4 text-neutral-400">{r.type}</td>
-                  <td className="py-3"><Badge tone={r.status}>{r.status}</Badge></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SortableTable
+          minWidth={560}
+          initialSort="da"
+          rows={rows.map((r) => ({ ...r, _key: r.domain }))}
+          columns={[
+            { key: 'domain', label: 'Domain' },
+            { key: 'da', label: 'DA', render: (r) => <span className="font-bold text-white">{r.da}</span> },
+            { key: 'backlinks', label: 'Backlinks', cellClass: 'text-neutral-300' },
+            { key: 'type', label: 'Link Type', cellClass: 'text-neutral-400' },
+            { key: 'status', label: 'Status', render: (r) => <Badge tone={r.status}>{r.status}</Badge> },
+          ]}
+        />
       </Card>
     </div>
   )

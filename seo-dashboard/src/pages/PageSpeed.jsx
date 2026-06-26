@@ -6,11 +6,10 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
   CartesianGrid,
 } from 'recharts'
 import { pageSpeed } from '../data.js'
-import { Card, Badge, ToneText } from '../ui.jsx'
+import { Card, Badge, ToneText, SortableTable } from '../ui.jsx'
 import { tooltipStyle } from './Overview.jsx'
 
 export default function PageSpeed() {
@@ -31,17 +30,17 @@ export default function PageSpeed() {
         </div>
       </Card>
 
-      <Card title="Core Web Vitals Trend" subtitle="6-month view">
+      <Card title="Core Web Vitals Trend" subtitle="6-month view · LCP & INP improving">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={p.cwvTrend} margin={{ left: -10, right: 10 }}>
+            <LineChart data={p.cwvTrend} margin={{ left: -10, right: -6 }}>
               <CartesianGrid stroke="#1f1f1f" vertical={false} />
               <XAxis dataKey="month" tick={{ fill: '#737373', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#737373', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="lcp" tick={{ fill: '#737373', fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 'auto']} />
+              <YAxis yAxisId="inp" orientation="right" tick={{ fill: '#737373', fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 'auto']} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 12, color: '#a3a3a3' }} />
-              <Line type="monotone" dataKey="lcp" name="LCP (s)" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="cls" name="CLS" stroke="#a855f7" strokeWidth={2.5} dot={false} />
+              <Line yAxisId="lcp" type="monotone" dataKey="lcp" name="LCP (s)" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 3, fill: '#3b82f6' }} />
+              <Line yAxisId="inp" type="monotone" dataKey="inp" name="INP (ms)" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3, fill: '#f59e0b' }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -53,26 +52,16 @@ export default function PageSpeed() {
       </Card>
 
       <Card title="Underperforming Pages" subtitle="Pages failing Core Web Vital thresholds">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[480px] text-sm">
-            <thead>
-              <tr className="border-b border-ink-700 text-left text-xs uppercase tracking-wider text-neutral-500">
-                <th className="py-3 pr-4 font-medium">URL</th>
-                <th className="py-3 pr-4 font-medium">LCP (s)</th>
-                <th className="py-3 font-medium">INP (ms)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-800">
-              {p.underperforming.map((row) => (
-                <tr key={row.url} className="hover:bg-ink-850/50">
-                  <td className="py-3 pr-4 text-neutral-200">{row.url}</td>
-                  <td className="py-3 pr-4"><ToneText tone={row.lcpTone}>{row.lcp}</ToneText></td>
-                  <td className="py-3"><ToneText tone={row.inpTone}>{row.inp}</ToneText></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SortableTable
+          minWidth={480}
+          initialSort="lcp"
+          rows={p.underperforming.map((r) => ({ ...r, _key: r.url }))}
+          columns={[
+            { key: 'url', label: 'URL' },
+            { key: 'lcp', label: 'LCP (s)', sortValue: (r) => parseFloat(r.lcp), render: (r) => <ToneText tone={r.lcpTone}>{r.lcp}</ToneText> },
+            { key: 'inp', label: 'INP (ms)', sortValue: (r) => parseFloat(r.inp), render: (r) => <ToneText tone={r.inpTone}>{r.inp}</ToneText> },
+          ]}
+        />
       </Card>
     </div>
   )

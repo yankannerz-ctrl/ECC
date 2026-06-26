@@ -1,5 +1,5 @@
-import React from 'react'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import React, { useState } from 'react'
+import { TrendingUp, TrendingDown, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 
 // ---- Card shell ----
 export function Card({ children, className = '', title, subtitle, right }) {
@@ -80,4 +80,64 @@ export function Dot({ color = '#22c55e', size = 9 }) {
 export function ToneText({ tone, children }) {
   const map = { red: 'text-red-400', amber: 'text-amber-400', green: 'text-emerald-400' }
   return <span className={`font-semibold ${map[tone] || 'text-white'}`}>{children}</span>
+}
+
+// ---- Sortable table ----
+// columns: [{ key, label, render?, sortValue?, className? }]
+// Click a header to sort; click again to flip direction.
+export function SortableTable({ columns, rows, initialSort, minWidth = 480 }) {
+  const [sort, setSort] = useState(initialSort ? { key: initialSort, dir: 'desc' } : null)
+
+  const sorted = React.useMemo(() => {
+    if (!sort) return rows
+    const col = columns.find((c) => c.key === sort.key)
+    const val = (r) => (col?.sortValue ? col.sortValue(r) : r[sort.key])
+    const out = [...rows].sort((a, b) => {
+      const av = val(a)
+      const bv = val(b)
+      if (typeof av === 'number' && typeof bv === 'number') return av - bv
+      return String(av).localeCompare(String(bv))
+    })
+    return sort.dir === 'desc' ? out.reverse() : out
+  }, [rows, sort, columns])
+
+  const toggle = (key) =>
+    setSort((s) => (s && s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }))
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm" style={{ minWidth }}>
+        <thead>
+          <tr className="border-b border-ink-700 text-left text-xs uppercase tracking-wider text-neutral-500">
+            {columns.map((c) => {
+              const active = sort?.key === c.key
+              const Icon = !active ? ChevronsUpDown : sort.dir === 'desc' ? ChevronDown : ChevronUp
+              return (
+                <th key={c.key} className={`py-3 pr-4 font-medium ${c.className || ''}`}>
+                  <button
+                    onClick={() => toggle(c.key)}
+                    className={`inline-flex items-center gap-1 transition hover:text-neutral-200 ${active ? 'text-neutral-200' : ''}`}
+                  >
+                    {c.label}
+                    <Icon size={13} className={active ? 'text-brand' : 'text-neutral-600'} />
+                  </button>
+                </th>
+              )
+            })}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-ink-800">
+          {sorted.map((r, i) => (
+            <tr key={r._key || i} className="hover:bg-ink-850/50">
+              {columns.map((c) => (
+                <td key={c.key} className={`py-3 pr-4 ${c.cellClass || 'text-neutral-200'}`}>
+                  {c.render ? c.render(r) : r[c.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }

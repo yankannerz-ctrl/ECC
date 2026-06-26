@@ -12,18 +12,20 @@ import {
   Tooltip,
 } from 'recharts'
 import { overview } from '../data.js'
+import { scaleNum, scaleMoney, periodOf } from '../period.js'
 import { Card, Delta, Metric, Badge, Dot } from '../ui.jsx'
 
-export default function Overview() {
+export default function Overview({ period = 'This Month' }) {
   const o = overview
+  const p = periodOf(period)
   return (
     <div className="space-y-5">
       {/* Total visitors — full width hero */}
       <Card title="Total Visitors" subtitle="GA4 · Organic + All Channels">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <Metric value={o.totalVisitors.value.toLocaleString()} />
-            <Delta className="mt-2" value={o.totalVisitors.delta} up label="vs last month" />
+            <Metric value={scaleNum(o.totalVisitors.value, period).toLocaleString()} />
+            <Delta className="mt-2" value={o.totalVisitors.delta} up label={p.deltaLabel} />
           </div>
         </div>
         <div className="mt-4 h-24">
@@ -38,21 +40,21 @@ export default function Overview() {
       {/* Leads + Conversion */}
       <div className="grid gap-5 sm:grid-cols-2">
         <Card title="Leads Generated" subtitle="CRM">
-          <Metric value={o.leads.value} />
-          <Delta className="mt-2" value={o.leads.delta} up label="MoM" />
-          <p className="mt-3 text-sm text-neutral-500">{o.leads.sub}</p>
+          <Metric value={scaleNum(o.leads.value, period).toLocaleString()} />
+          <Delta className="mt-2" value={o.leads.delta} up label={p.suffix} />
+          <p className="mt-3 text-sm text-neutral-500">From {scaleNum(o.totalVisitors.value, period).toLocaleString()} visitors</p>
         </Card>
         <Card title="Conversion Rate" subtitle="Leads / Visitors">
           <Metric value={o.conversion.value} />
-          <Delta className="mt-2" value={o.conversion.delta} up label="MoM" />
+          <Delta className="mt-2" value={o.conversion.delta} up label={p.suffix} />
           <p className="mt-3 text-sm text-neutral-500">{o.conversion.sub}</p>
         </Card>
       </div>
 
       {/* Revenue from organic */}
       <Card title="Revenue from Organic" subtitle="CRM attribution">
-        <Metric value={o.revenue.value} />
-        <Delta className="mt-2" value={o.revenue.delta} up label="MoM" />
+        <Metric value={scaleMoney(o.revenue.value, period)} />
+        <Delta className="mt-2" value={o.revenue.delta} up label={p.suffix} />
         <div className="mt-4 h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={o.revenue.bars}>
@@ -115,12 +117,12 @@ export default function Overview() {
       {/* Organic sessions + bounce */}
       <div className="grid gap-5 sm:grid-cols-2">
         <Card title="Organic Sessions" subtitle="GA4">
-          <Metric value={o.organicSessions.value.toLocaleString()} />
-          <Delta className="mt-2" value={o.organicSessions.delta} up label="MoM" />
+          <Metric value={scaleNum(o.organicSessions.value, period).toLocaleString()} />
+          <Delta className="mt-2" value={o.organicSessions.delta} up label={p.suffix} />
         </Card>
         <Card title="Bounce Rate" subtitle="GA4">
           <Metric value={o.bounceRate.value} />
-          <Delta className="mt-2" value={o.bounceRate.delta} up={false} label="MoM" />
+          <Delta className="mt-2" value={o.bounceRate.delta} up={false} label={p.suffix} />
         </Card>
       </div>
 

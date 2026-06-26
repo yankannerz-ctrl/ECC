@@ -11,8 +11,11 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { searchConsole } from '../data.js'
-import { Card, Delta, Metric, Badge } from '../ui.jsx'
+import { scaleNum, periodOf } from '../period.js'
+import { Card, Delta, Metric, Badge, SortableTable } from '../ui.jsx'
 import { tooltipStyle } from './Overview.jsx'
+
+const toNum = (s) => Number(String(s).replace(/[^0-9.]/g, ''))
 
 const intentTone = { Commercial: 'blue', Informational: 'amber', Transactional: 'green' }
 
@@ -34,14 +37,17 @@ function MiniStat({ title, sub, value, delta, up, color = '#3b82f6', trend, valu
   )
 }
 
-export default function SearchConsole() {
+export default function SearchConsole({ period = 'This Month' }) {
   const s = searchConsole
+  const p = periodOf(period)
+  const clicks = scaleNum(toNum(s.stats.clicks.value), period).toLocaleString()
+  const impressions = scaleNum(toNum(s.stats.impressions.value), period).toLocaleString()
   return (
     <div className="space-y-5">
       {/* Stat grid */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <MiniStat title="Total Clicks" sub="GSC · This period" value={s.stats.clicks.value} delta={s.stats.clicks.delta} up trend={s.stats.clicks.trend} color="#3b82f6" />
-        <MiniStat title="Total Impressions" sub="GSC · This period" value={s.stats.impressions.value} delta={s.stats.impressions.delta} up trend={s.stats.impressions.trend} color="#a855f7" />
+        <MiniStat title="Total Clicks" sub="GSC · This period" value={clicks} delta={s.stats.clicks.delta} up trend={s.stats.clicks.trend} color="#3b82f6" />
+        <MiniStat title="Total Impressions" sub="GSC · This period" value={impressions} delta={s.stats.impressions.delta} up trend={s.stats.impressions.trend} color="#a855f7" />
         <Card title="Average CTR" subtitle="GSC · This period" className="!p-4">
           <Metric value={s.stats.ctr.value} />
           <Delta className="mt-2" value={s.stats.ctr.delta} up label="MoM" />
@@ -72,60 +78,38 @@ export default function SearchConsole() {
 
       {/* Top pages */}
       <Card title="Top Pages" subtitle="Top 10 by clicks · sortable">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[480px] text-sm">
-            <thead>
-              <tr className="border-b border-ink-700 text-left text-xs uppercase tracking-wider text-neutral-500">
-                <th className="py-3 pr-4 font-medium">URL</th>
-                <th className="py-3 pr-4 font-medium">Clicks</th>
-                <th className="py-3 font-medium">Impressions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-800">
-              {s.topPages.map((r) => (
-                <tr key={r.url} className="hover:bg-ink-850/50">
-                  <td className="py-3 pr-4 text-neutral-200">{r.url}</td>
-                  <td className="py-3 pr-4 font-semibold text-white">{r.clicks}</td>
-                  <td className="py-3 text-neutral-300">{r.impressions}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SortableTable
+          minWidth={480}
+          initialSort="clicks"
+          rows={s.topPages.map((r) => ({ ...r, _key: r.url }))}
+          columns={[
+            { key: 'url', label: 'URL' },
+            { key: 'clicks', label: 'Clicks', cellClass: 'font-semibold text-white' },
+            { key: 'impressions', label: 'Impressions', cellClass: 'text-neutral-300', sortValue: (r) => toNum(r.impressions) },
+          ]}
+        />
       </Card>
 
       {/* Queries */}
       <Card title="Top Queries" subtitle="By clicks · with search intent">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="border-b border-ink-700 text-left text-xs uppercase tracking-wider text-neutral-500">
-                <th className="py-3 pr-4 font-medium">Query</th>
-                <th className="py-3 pr-4 font-medium">Clicks</th>
-                <th className="py-3 pr-4 font-medium">Impressions</th>
-                <th className="py-3 pr-4 font-medium">CTR</th>
-                <th className="py-3 pr-4 font-medium">Position</th>
-                <th className="py-3 font-medium">Intent</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-800">
-              {s.queries.map((r) => (
-                <tr key={r.q} className="hover:bg-ink-850/50">
-                  <td className="py-3 pr-4 text-neutral-200">{r.q}</td>
-                  <td className="py-3 pr-4 text-neutral-300">{r.clicks}</td>
-                  <td className="py-3 pr-4 text-neutral-300">{r.impressions}</td>
-                  <td className="py-3 pr-4 text-neutral-300">{r.ctr}</td>
-                  <td className="py-3 pr-4">
-                    <span className={r.position <= 3 ? 'font-semibold text-emerald-400' : 'font-semibold text-amber-400'}>
-                      {r.position}
-                    </span>
-                  </td>
-                  <td className="py-3"><Badge tone={intentTone[r.intent]}>{r.intent}</Badge></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SortableTable
+          minWidth={640}
+          initialSort="clicks"
+          rows={s.queries.map((r) => ({ ...r, _key: r.q }))}
+          columns={[
+            { key: 'q', label: 'Query' },
+            { key: 'clicks', label: 'Clicks', cellClass: 'text-neutral-300' },
+            { key: 'impressions', label: 'Impressions', cellClass: 'text-neutral-300', sortValue: (r) => toNum(r.impressions) },
+            { key: 'ctr', label: 'CTR', cellClass: 'text-neutral-300', sortValue: (r) => toNum(r.ctr) },
+            {
+              key: 'position', label: 'Position',
+              render: (r) => (
+                <span className={r.position <= 3 ? 'font-semibold text-emerald-400' : 'font-semibold text-amber-400'}>{r.position}</span>
+              ),
+            },
+            { key: 'intent', label: 'Intent', render: (r) => <Badge tone={intentTone[r.intent]}>{r.intent}</Badge> },
+          ]}
+        />
       </Card>
     </div>
   )
