@@ -11,12 +11,10 @@ import {
   XAxis,
   Tooltip,
 } from 'recharts'
-import { overview } from '../data.js'
 import { scaleNum, scaleMoney, periodOf } from '../period.js'
 import { Card, Delta, Metric, Badge, Dot } from '../ui.jsx'
 
-export default function Overview({ period = 'This Month' }) {
-  const o = overview
+export default function Overview({ data: o, period = 'This Month' }) {
   const p = periodOf(period)
   return (
     <div className="space-y-5">

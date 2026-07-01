@@ -8,12 +8,10 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { pageSpeed } from '../data.js'
 import { Card, Badge, ToneText, SortableTable } from '../ui.jsx'
 import { tooltipStyle } from './Overview.jsx'
 
-export default function PageSpeed() {
-  const p = pageSpeed
+export default function PageSpeed({ data: p }) {
   return (
     <div className="space-y-5">
       <Card title="Site Speed Summary" subtitle="PageSpeed Insights · Mobile">

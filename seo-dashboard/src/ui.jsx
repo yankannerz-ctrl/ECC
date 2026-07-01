@@ -82,6 +82,28 @@ export function ToneText({ tone, children }) {
   return <span className={`font-semibold ${map[tone] || 'text-white'}`}>{children}</span>
 }
 
+// ---- Loading skeletons ----
+export function Skeleton({ className = '' }) {
+  return <div className={`animate-pulse rounded-xl bg-ink-800 ${className}`} />
+}
+
+export function PageSkeleton() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-44 w-full" />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Skeleton className="h-36" />
+        <Skeleton className="h-36" />
+      </div>
+      <Skeleton className="h-56 w-full" />
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Skeleton className="h-48" />
+        <Skeleton className="h-48" />
+      </div>
+    </div>
+  )
+}
+
 // ---- Sortable table ----
 // columns: [{ key, label, render?, sortValue?, className? }]
 // Click a header to sort; click again to flip direction.

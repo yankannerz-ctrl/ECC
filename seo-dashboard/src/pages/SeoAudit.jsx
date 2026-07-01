@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import { seoAudit } from '../data.js'
 import { Card, Badge, SortableTable } from '../ui.jsx'
 
 const sevTone = { Critical: 'red', Warning: 'amber', Notice: 'blue' }
 
-export default function SeoAudit() {
-  const a = seoAudit
+export default function SeoAudit({ data: a }) {
   const [filter, setFilter] = useState('All')
   const categories = ['All', ...a.categories.map((c) => c.name)]
   const rows = filter === 'All' ? a.issues : a.issues.filter((i) => i.category === filter)

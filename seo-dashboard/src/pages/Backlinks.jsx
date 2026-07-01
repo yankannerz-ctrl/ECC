@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
-import { backlinks } from '../data.js'
 import { Card, Delta, Metric, Badge, SortableTable } from '../ui.jsx'
 
-export default function Backlinks() {
-  const b = backlinks
+export default function Backlinks({ data: b }) {
   const [tab, setTab] = useState('All Links')
   const rows = tab === 'Dofollow Only' ? b.rows.filter((r) => r.type === 'Dofollow') : b.rows
 

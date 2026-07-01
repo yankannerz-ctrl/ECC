@@ -10,7 +10,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { searchConsole } from '../data.js'
 import { scaleNum, periodOf } from '../period.js'
 import { Card, Delta, Metric, Badge, SortableTable } from '../ui.jsx'
 import { tooltipStyle } from './Overview.jsx'
@@ -19,11 +18,11 @@ const toNum = (s) => Number(String(s).replace(/[^0-9.]/g, ''))
 
 const intentTone = { Commercial: 'blue', Informational: 'amber', Transactional: 'green' }
 
-function MiniStat({ title, sub, value, delta, up, color = '#3b82f6', trend, valueClass = '' }) {
+function MiniStat({ title, sub, value, delta, up, color = '#3b82f6', trend, valueClass = '', suffix = 'MoM' }) {
   return (
     <Card title={title} subtitle={sub} className="!p-4">
       <Metric className={valueClass} value={value} />
-      {delta && <Delta className="mt-2" value={delta} up={up} label="MoM" />}
+      {delta && <Delta className="mt-2" value={delta} up={up} label={suffix} />}
       {trend && (
         <div className="mt-3 h-12">
           <ResponsiveContainer width="100%" height="100%">
@@ -37,8 +36,7 @@ function MiniStat({ title, sub, value, delta, up, color = '#3b82f6', trend, valu
   )
 }
 
-export default function SearchConsole({ period = 'This Month' }) {
-  const s = searchConsole
+export default function SearchConsole({ data: s, period = 'This Month' }) {
   const p = periodOf(period)
   const clicks = scaleNum(toNum(s.stats.clicks.value), period).toLocaleString()
   const impressions = scaleNum(toNum(s.stats.impressions.value), period).toLocaleString()
@@ -46,11 +44,11 @@ export default function SearchConsole({ period = 'This Month' }) {
     <div className="space-y-5">
       {/* Stat grid */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <MiniStat title="Total Clicks" sub="GSC · This period" value={clicks} delta={s.stats.clicks.delta} up trend={s.stats.clicks.trend} color="#3b82f6" />
-        <MiniStat title="Total Impressions" sub="GSC · This period" value={impressions} delta={s.stats.impressions.delta} up trend={s.stats.impressions.trend} color="#a855f7" />
+        <MiniStat title="Total Clicks" sub="GSC · This period" value={clicks} delta={s.stats.clicks.delta} up trend={s.stats.clicks.trend} color="#3b82f6" suffix={p.suffix} />
+        <MiniStat title="Total Impressions" sub="GSC · This period" value={impressions} delta={s.stats.impressions.delta} up trend={s.stats.impressions.trend} color="#a855f7" suffix={p.suffix} />
         <Card title="Average CTR" subtitle="GSC · This period" className="!p-4">
           <Metric value={s.stats.ctr.value} />
-          <Delta className="mt-2" value={s.stats.ctr.delta} up label="MoM" />
+          <Delta className="mt-2" value={s.stats.ctr.delta} up label={p.suffix} />
           <p className="mt-3 text-sm text-neutral-500">{s.stats.ctr.sub}</p>
         </Card>
         <Card title="Average Position" subtitle="GSC · Lower = better" className="!p-4">

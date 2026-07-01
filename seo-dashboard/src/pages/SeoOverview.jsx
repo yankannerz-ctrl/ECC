@@ -1,11 +1,9 @@
 import React from 'react'
 import { ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { seoOverview } from '../data.js'
 import { scaleNum, periodOf } from '../period.js'
 import { Card, Delta, Metric, Badge, Dot } from '../ui.jsx'
 
-export default function SeoOverview({ period = 'This Month' }) {
-  const s = seoOverview
+export default function SeoOverview({ data: s, period = 'This Month' }) {
   const p = periodOf(period)
   const score = s.onPageScore
   const circumference = 2 * Math.PI * 52
